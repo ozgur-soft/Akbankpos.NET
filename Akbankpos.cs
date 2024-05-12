@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Net.Mime;
 using System.Reflection;
 using System.Security.Cryptography;
@@ -343,12 +344,12 @@ namespace Akbankpos {
             [JsonPropertyName("amount")]
             [FormElementName("amount")]
             public float? Amount { get; set; }
-            [JsonPropertyName("currency")]
+            [JsonPropertyName("currencyCode")]
             [FormElementName("currencyCode")]
             public int? Currency { get; set; }
             [JsonPropertyName("motoInd")]
             public int? MotoInd { get; set; }
-            [JsonPropertyName("installment")]
+            [JsonPropertyName("installCount")]
             [FormElementName("installCount")]
             public int? Installment { get; set; }
             [JsonPropertyName("authCode")]
@@ -360,7 +361,7 @@ namespace Akbankpos {
             [JsonPropertyName("stan")]
             public int? Stan { get; set; }
             public void SetAmount(string amount, string currency) {
-                Amount = float.Parse(amount);
+                Amount = float.Parse(amount, CultureInfo.InvariantCulture);
                 Currency = currency switch {
                     "TRY" => 949,
                     "YTL" => 949,
@@ -370,11 +371,11 @@ namespace Akbankpos {
                     "EUR" => 978,
                     "GBP" => 826,
                     "JPY" => 392,
-                    _ => null
+                    _ => int.TryParse(currency, out var code) ? code : null
                 };
             }
             public void SetInstallment(string installment) {
-                Installment = int.Parse(installment);
+                Installment = int.TryParse(installment, out var count) ? count : 1;
             }
         }
         public class TxnDetail {
@@ -620,6 +621,8 @@ namespace Akbankpos {
             return form;
         }
         public Response PreAuth(Request data) {
+            data.Version = "1.00";
+            data.Terminal ??= new() { MerchantSafeId = MerchantId, TerminalSafeId = TerminalId };
             data.RequestDateTime = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss.fff");
             data.RandomNumber = Random(128);
             data.TxnCode = "1004";
@@ -627,6 +630,8 @@ namespace Akbankpos {
             return _Transaction(data);
         }
         public Response Auth(Request data) {
+            data.Version = "1.00";
+            data.Terminal ??= new() { MerchantSafeId = MerchantId, TerminalSafeId = TerminalId };
             data.RequestDateTime = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss.fff");
             data.RandomNumber = Random(128);
             data.TxnCode = "1000";
@@ -634,6 +639,8 @@ namespace Akbankpos {
             return _Transaction(data);
         }
         public Response PreAuth3d(Request data) {
+            data.Version = "1.00";
+            data.Terminal ??= new() { MerchantSafeId = MerchantId, TerminalSafeId = TerminalId };
             data.RequestDateTime = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss.fff");
             data.RandomNumber = Random(128);
             data.TxnCode = "3004";
@@ -645,6 +652,8 @@ namespace Akbankpos {
             return _Transaction(data);
         }
         public Response Auth3d(Request data) {
+            data.Version = "1.00";
+            data.Terminal ??= new() { MerchantSafeId = MerchantId, TerminalSafeId = TerminalId };
             data.RequestDateTime = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss.fff");
             data.RandomNumber = Random(128);
             data.TxnCode = "3000";
@@ -656,18 +665,24 @@ namespace Akbankpos {
             return _Transaction(data);
         }
         public Response PostAuth(Request data) {
+            data.Version = "1.00";
+            data.Terminal ??= new() { MerchantSafeId = MerchantId, TerminalSafeId = TerminalId };
             data.RequestDateTime = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss.fff");
             data.RandomNumber = Random(128);
             data.TxnCode = "1005";
             return _Transaction(data);
         }
         public Response Refund(Request data) {
+            data.Version = "1.00";
+            data.Terminal ??= new() { MerchantSafeId = MerchantId, TerminalSafeId = TerminalId };
             data.RequestDateTime = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss.fff");
             data.RandomNumber = Random(128);
             data.TxnCode = "1002";
             return _Transaction(data);
         }
         public Response Cancel(Request data) {
+            data.Version = "1.00";
+            data.Terminal ??= new() { MerchantSafeId = MerchantId, TerminalSafeId = TerminalId };
             data.RequestDateTime = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss.fff");
             data.RandomNumber = Random(128);
             data.TxnCode = "1003";
@@ -675,12 +690,20 @@ namespace Akbankpos {
         }
         public Response _Transaction(Request data) {
             var payload = JsonSerializer.Serialize(data, new JsonSerializerOptions { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull });
-            using var http = new HttpClient() { DefaultRequestHeaders = { { "auth-hash", Hash(payload) }, { "Content-Type", MediaTypeNames.Application.Json } } };
+            using var http = new HttpClient();
+            http.DefaultRequestHeaders.TryAddWithoutValidation("auth-hash", Hash(payload));
+            http.DefaultRequestHeaders.TryAddWithoutValidation("Content-Type", MediaTypeNames.Application.Json);
             using var request = new HttpRequestMessage(HttpMethod.Post, Endpoint + "/api/v1/payment/virtualpos/transaction/process") { Content = new StringContent(payload) };
             using var response = http.Send(request);
-            using var stream = response.Content.ReadAsStream();
-            var result = JsonSerializer.Deserialize<Response>(stream);
-            return result;
+            if (response.IsSuccessStatusCode) {
+                using var stream = response.Content.ReadAsStream();
+                var result = JsonSerializer.Deserialize<Response>(stream);
+                return result;
+            } else {
+                using var stream = response.Content.ReadAsStream();
+                var result = JsonSerializer.Deserialize<Error>(stream);
+                return new() { Error = result };
+            }
         }
     }
 }
