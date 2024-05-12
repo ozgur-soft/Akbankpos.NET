@@ -132,9 +132,9 @@ namespace Akbankpos {
             [JsonPropertyName("b2b")]
             public B2B B2B { get; set; }
             [JsonPropertyName("linkValidTerm")]
-            public float? LinkValidTerm { get; set; }
+            public decimal? LinkValidTerm { get; set; }
             [JsonPropertyName("merchantId")]
-            public float? MerchantId { get; set; }
+            public decimal? MerchantId { get; set; }
             [JsonPropertyName("linkExpireDate")]
             public string LinkExpireDate { get; set; }
             [JsonPropertyName("merchantOrderId")]
@@ -249,7 +249,7 @@ namespace Akbankpos {
         }
         public class SGK {
             [JsonPropertyName("surchargeAmount")]
-            public float? SurchargeAmount { get; set; }
+            public decimal? SurchargeAmount { get; set; }
         }
         public class SubMerchant {
             [JsonPropertyName("subMerchantId")]
@@ -272,7 +272,7 @@ namespace Akbankpos {
         }
         public class Installment {
             [JsonPropertyName("installmentCount")]
-            public float? InstallmentCount { get; set; }
+            public decimal? InstallmentCount { get; set; }
             [JsonPropertyName("installmentType")]
             public string InstallmentType { get; set; }
             [JsonPropertyName("cardType")]
@@ -280,9 +280,9 @@ namespace Akbankpos {
         }
         public class Interest {
             [JsonPropertyName("interestRate")]
-            public float? InterestRate { get; set; }
+            public decimal? InterestRate { get; set; }
             [JsonPropertyName("interestAmount")]
-            public float? InterestAmount { get; set; }
+            public decimal? InterestAmount { get; set; }
         }
         public class LinkDetail {
             [JsonPropertyName("linkTransferType")]
@@ -292,13 +292,13 @@ namespace Akbankpos {
             [JsonPropertyName("email")]
             public string Email { get; set; }
             [JsonPropertyName("linkValidTerm")]
-            public float? LinkValidTerm { get; set; }
+            public decimal? LinkValidTerm { get; set; }
             [JsonPropertyName("amount")]
-            public float? Amount { get; set; }
+            public decimal? Amount { get; set; }
             [JsonPropertyName("currency")]
             public int? Currency { get; set; }
             [JsonPropertyName("installmentCount")]
-            public float? InstallmentCount { get; set; }
+            public decimal? InstallmentCount { get; set; }
             [JsonPropertyName("referenceId")]
             public string ReferenceId { get; set; }
             [JsonPropertyName("errorCode")]
@@ -310,41 +310,41 @@ namespace Akbankpos {
             [JsonPropertyName("linkStatus")]
             public string LinkStatus { get; set; }
             [JsonPropertyName("installmentType")]
-            public float? InstallmentType { get; set; }
+            public decimal? InstallmentType { get; set; }
         }
         public class Reward {
             [JsonPropertyName("ccbRewardAmount")]
             [FormElementName("ccbRewardAmount")]
-            public float? CcbRewardAmount { get; set; }
+            public decimal? CcbRewardAmount { get; set; }
             [JsonPropertyName("pcbRewardAmount")]
             [FormElementName("pcbRewardAmount")]
-            public float? PcbRewardAmount { get; set; }
+            public decimal? PcbRewardAmount { get; set; }
             [JsonPropertyName("xcbRewardAmount")]
             [FormElementName("xcbRewardAmount")]
-            public float? XcbRewardAmount { get; set; }
+            public decimal? XcbRewardAmount { get; set; }
             [JsonPropertyName("ccbEarnedRewardAmount")]
-            public float? CcbEarnedRewardAmount { get; set; }
+            public decimal? CcbEarnedRewardAmount { get; set; }
             [JsonPropertyName("ccbBalanceRewardAmount")]
-            public float? CcbBalanceRewardAmount { get; set; }
+            public decimal? CcbBalanceRewardAmount { get; set; }
             [JsonPropertyName("ccbRewardDesc")]
             public string CcbRewardDesc { get; set; }
             [JsonPropertyName("pcbEarnedRewardAmount")]
-            public float? PcbEarnedRewardAmount { get; set; }
+            public decimal? PcbEarnedRewardAmount { get; set; }
             [JsonPropertyName("pcbBalanceRewardAmount")]
-            public float? PcbBalanceRewardAmount { get; set; }
+            public decimal? PcbBalanceRewardAmount { get; set; }
             [JsonPropertyName("pcbRewardDesc")]
             public string PcbRewardDesc { get; set; }
             [JsonPropertyName("xcbEarnedRewardAmount")]
-            public float? XcbEarnedRewardAmount { get; set; }
+            public decimal? XcbEarnedRewardAmount { get; set; }
             [JsonPropertyName("xcbBalanceRewardAmount")]
-            public float? XcbBalanceRewardAmount { get; set; }
+            public decimal? XcbBalanceRewardAmount { get; set; }
             [JsonPropertyName("xcbRewardDesc")]
             public string XcbRewardDesc { get; set; }
         }
         public class Transaction {
             [JsonPropertyName("amount")]
             [FormElementName("amount")]
-            public float? Amount { get; set; }
+            public decimal? Amount { get; set; }
             [JsonPropertyName("currencyCode")]
             [FormElementName("currencyCode")]
             public int? Currency { get; set; }
@@ -362,7 +362,7 @@ namespace Akbankpos {
             [JsonPropertyName("stan")]
             public int? Stan { get; set; }
             public void SetAmount(string amount, string currency) {
-                Amount = float.Parse(amount, CultureInfo.InvariantCulture);
+                Amount = decimal.Parse(amount, CultureInfo.InvariantCulture);
                 Currency = currency switch {
                     "TRY" => 949,
                     "YTL" => 949,
@@ -432,7 +432,7 @@ namespace Akbankpos {
             public string TxnStatus { get; set; }
 
             [JsonPropertyName("amount")]
-            public float? Amount { get; set; }
+            public decimal? Amount { get; set; }
 
             [JsonPropertyName("currencyCode")]
             public int? Currency { get; set; }
@@ -444,22 +444,22 @@ namespace Akbankpos {
             public int? Installment { get; set; }
 
             [JsonPropertyName("ccbRewardAmount")]
-            public float? CcbRewardAmount { get; set; }
+            public decimal? CcbRewardAmount { get; set; }
 
             [JsonPropertyName("pcbRewardAmount")]
-            public float? PcbRewardAmount { get; set; }
+            public decimal? PcbRewardAmount { get; set; }
 
             [JsonPropertyName("xcbRewardAmount")]
-            public float? XcbRewardAmount { get; set; }
+            public decimal? XcbRewardAmount { get; set; }
 
             [JsonPropertyName("preAuthStatus")]
             public string PreAuthStatus { get; set; }
 
             [JsonPropertyName("preAuthCloseAmount")]
-            public float? PreAuthCloseAmount { get; set; }
+            public decimal? PreAuthCloseAmount { get; set; }
 
             [JsonPropertyName("preAuthPartialCancelAmount")]
-            public float? PreAuthPartialCancelAmount { get; set; }
+            public decimal? PreAuthPartialCancelAmount { get; set; }
 
             [JsonPropertyName("preAuthCloseDate")]
             public string PreAuthCloseDate { get; set; }
