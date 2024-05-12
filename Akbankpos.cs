@@ -141,7 +141,7 @@ namespace Akbankpos {
             [JsonPropertyName("linkDetail")]
             public LinkDetail LinkDetail { get; set; }
             [JsonPropertyName("installmentConditionList")]
-            public List<InstallmentCond> InstallmentConditionList { get; set; }
+            public List<Installment> InstallmentList { get; set; }
             [JsonPropertyName("txnDetailList")]
             public List<TxnDetail> TxnDetailList { get; set; }
             [JsonPropertyName("error")]
@@ -251,7 +251,7 @@ namespace Akbankpos {
             [JsonPropertyName("returnMessage")]
             public string ReturnMessage { get; set; }
         }
-        public class InstallmentCond {
+        public class Installment {
             [JsonPropertyName("installmentCount")]
             public float? InstallmentCount { get; set; }
             [JsonPropertyName("installmentType")]
