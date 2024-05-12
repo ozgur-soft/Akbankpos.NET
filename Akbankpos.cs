@@ -706,5 +706,8 @@ namespace Akbankpos {
                 return new() { Error = result };
             }
         }
+        public static string Json<T>(T data) where T : class {
+            return JsonSerializer.Serialize(data, new JsonSerializerOptions { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull, WriteIndented = true });
+        }
     }
 }
