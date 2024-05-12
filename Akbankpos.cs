@@ -623,6 +623,7 @@ namespace Akbankpos {
             data.RandomNumber = Random(128);
             data.TxnCode = "3004";
             data.PaymentModel = "3D";
+            data.Order ??= new() { OrderId = Guid.NewGuid().ToString() };
             var parameters = new string[] { "paymentModel", "txnCode", "merchantSafeId", "terminalSafeId", "orderId", "lang", "amount", "ccbRewardAmount", "pcbRewardAmount", "xcbRewardAmount", "currencyCode", "installCount", "okUrl", "failUrl", "emailAddress", "subMerchantId", "creditCard", "expiredDate", "cvv", "randomNumber", "requestDateTime", "b2bIdentityNumber" };
             var form = Form3D(data);
             data.Hash = Hash3D(form, parameters);
@@ -633,6 +634,7 @@ namespace Akbankpos {
             data.RandomNumber = Random(128);
             data.TxnCode = "3000";
             data.PaymentModel = "3D";
+            data.Order ??= new() { OrderId = Guid.NewGuid().ToString() };
             var parameters = new string[] { "paymentModel", "txnCode", "merchantSafeId", "terminalSafeId", "orderId", "lang", "amount", "ccbRewardAmount", "pcbRewardAmount", "xcbRewardAmount", "currencyCode", "installCount", "okUrl", "failUrl", "emailAddress", "subMerchantId", "creditCard", "expiredDate", "cvv", "randomNumber", "requestDateTime", "b2bIdentityNumber" };
             var form = Form3D(data);
             data.Hash = Hash3D(form, parameters);
