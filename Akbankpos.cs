@@ -1,4 +1,5 @@
 using System.Net.Mime;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -507,9 +508,157 @@ namespace Akbankpos {
             var plain = string.Join("", items);
             return Hash(plain);
         }
+        public Dictionary<string, string> Form3D(Request data) {
+            var form = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
+            var elements = data.GetType().GetProperties().Where(x => x.GetCustomAttribute<FormElementNameAttribute>() != null);
+            foreach (var element in elements) {
+                var key = element.GetCustomAttribute<FormElementNameAttribute>().Key;
+                var value = element.GetValue(data)?.ToString();
+                if (!string.IsNullOrEmpty(value)) {
+                    form.Add(key, value);
+                }
+            }
+            if (data.Terminal != null) {
+                var billto_elements = data.Terminal.GetType().GetProperties().Where(x => x.GetCustomAttribute<FormElementNameAttribute>() != null);
+                foreach (var element in billto_elements) {
+                    var key = element.GetCustomAttribute<FormElementNameAttribute>().Key;
+                    var value = element.GetValue(data.Terminal)?.ToString();
+                    if (!string.IsNullOrEmpty(value)) {
+                        form.Add(key, value);
+                    }
+                }
+            }
+            if (data.Card != null) {
+                var card_elements = data.Card.GetType().GetProperties().Where(x => x.GetCustomAttribute<FormElementNameAttribute>() != null);
+                foreach (var element in card_elements) {
+                    var key = element.GetCustomAttribute<FormElementNameAttribute>().Key;
+                    var value = element.GetValue(data.Card)?.ToString();
+                    if (!string.IsNullOrEmpty(value)) {
+                        form.Add(key, value);
+                    }
+                }
+            }
+            if (data.Customer != null) {
+                var customer_elements = data.Customer.GetType().GetProperties().Where(x => x.GetCustomAttribute<FormElementNameAttribute>() != null);
+                foreach (var element in customer_elements) {
+                    var key = element.GetCustomAttribute<FormElementNameAttribute>().Key;
+                    var value = element.GetValue(data.Customer)?.ToString();
+                    if (!string.IsNullOrEmpty(value)) {
+                        form.Add(key, value);
+                    }
+                }
+            }
+            if (data.Order != null) {
+                var order_elements = data.Order.GetType().GetProperties().Where(x => x.GetCustomAttribute<FormElementNameAttribute>() != null);
+                foreach (var element in order_elements) {
+                    var key = element.GetCustomAttribute<FormElementNameAttribute>().Key;
+                    var value = element.GetValue(data.Order)?.ToString();
+                    if (!string.IsNullOrEmpty(value)) {
+                        form.Add(key, value);
+                    }
+                }
+            }
+            if (data.Transaction != null) {
+                var transaction_elements = data.Transaction.GetType().GetProperties().Where(x => x.GetCustomAttribute<FormElementNameAttribute>() != null);
+                foreach (var element in transaction_elements) {
+                    var key = element.GetCustomAttribute<FormElementNameAttribute>().Key;
+                    var value = element.GetValue(data.Transaction)?.ToString();
+                    if (!string.IsNullOrEmpty(value)) {
+                        form.Add(key, value);
+                    }
+                }
+            }
+            if (data.Reward != null) {
+                var reward_elements = data.Reward.GetType().GetProperties().Where(x => x.GetCustomAttribute<FormElementNameAttribute>() != null);
+                foreach (var element in reward_elements) {
+                    var key = element.GetCustomAttribute<FormElementNameAttribute>().Key;
+                    var value = element.GetValue(data.Reward)?.ToString();
+                    if (!string.IsNullOrEmpty(value)) {
+                        form.Add(key, value);
+                    }
+                }
+            }
+            if (data.SubMerchant != null) {
+                var submerchant_elements = data.SubMerchant.GetType().GetProperties().Where(x => x.GetCustomAttribute<FormElementNameAttribute>() != null);
+                foreach (var element in submerchant_elements) {
+                    var key = element.GetCustomAttribute<FormElementNameAttribute>().Key;
+                    var value = element.GetValue(data.SubMerchant)?.ToString();
+                    if (!string.IsNullOrEmpty(value)) {
+                        form.Add(key, value);
+                    }
+                }
+            }
+            return form;
+        }
+        public Response PreAuth(Request data) {
+            data.RequestDateTime = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss.fff");
+            data.RandomNumber = Random(128);
+            data.TxnCode = "1004";
+            data.Transaction.MotoInd = 0;
+            return _Transaction(data);
+        }
+        public Response Auth(Request data) {
+            data.RequestDateTime = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss.fff");
+            data.RandomNumber = Random(128);
+            data.TxnCode = "1000";
+            data.Transaction.MotoInd = 0;
+            return _Transaction(data);
+        }
+        public Response PreAuth3D(Request data) {
+            data.RequestDateTime = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss.fff");
+            data.RandomNumber = Random(128);
+            data.TxnCode = "1004";
+            data.Transaction.MotoInd = 0;
+            return _Transaction(data);
+        }
+        public Response Auth3D(Request data) {
+            data.RequestDateTime = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss.fff");
+            data.RandomNumber = Random(128);
+            data.TxnCode = "1000";
+            data.Transaction.MotoInd = 0;
+            return _Transaction(data);
+        }
+        public Response PreAuth3Dhtml(Request data) {
+            data.RequestDateTime = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss.fff");
+            data.RandomNumber = Random(128);
+            data.TxnCode = "3004";
+            data.PaymentModel = "3D";
+            var parameters = new string[] { "paymentModel", "txnCode", "merchantSafeId", "terminalSafeId", "orderId", "lang", "amount", "ccbRewardAmount", "pcbRewardAmount", "xcbRewardAmount", "currencyCode", "installCount", "okUrl", "failUrl", "emailAddress", "subMerchantId", "creditCard", "expiredDate", "cvv", "randomNumber", "requestDateTime", "b2bIdentityNumber" };
+            var form = Form3D(data);
+            data.Hash = Hash3D(form, parameters);
+            return _Transaction(data);
+        }
+        public Response Auth3Dhtml(Request data) {
+            data.RequestDateTime = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss.fff");
+            data.RandomNumber = Random(128);
+            data.TxnCode = "3000";
+            data.PaymentModel = "3D";
+            var parameters = new string[] { "paymentModel", "txnCode", "merchantSafeId", "terminalSafeId", "orderId", "lang", "amount", "ccbRewardAmount", "pcbRewardAmount", "xcbRewardAmount", "currencyCode", "installCount", "okUrl", "failUrl", "emailAddress", "subMerchantId", "creditCard", "expiredDate", "cvv", "randomNumber", "requestDateTime", "b2bIdentityNumber" };
+            var form = Form3D(data);
+            data.Hash = Hash3D(form, parameters);
+            return _Transaction(data);
+        }
+        public Response PostAuth(Request data) {
+            data.RequestDateTime = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss.fff");
+            data.RandomNumber = Random(128);
+            data.TxnCode = "1005";
+            return _Transaction(data);
+        }
+        public Response Refund(Request data) {
+            data.RequestDateTime = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss.fff");
+            data.RandomNumber = Random(128);
+            data.TxnCode = "1002";
+            return _Transaction(data);
+        }
+        public Response Cancel(Request data) {
+            data.RequestDateTime = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss.fff");
+            data.RandomNumber = Random(128);
+            data.TxnCode = "1003";
+            return _Transaction(data);
+        }
         public Response _Transaction(Request data) {
-            var payload = JsonSerializer.Serialize(data, new JsonSerializerOptions { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull, WriteIndented = true });
-            using var http = new HttpClient() { DefaultRequestHeaders = { { "auth-hash", SecretKey }, { "Content-Type", MediaTypeNames.Application.Json } } };
+            var payload = JsonSerializer.Serialize(data, new JsonSerializerOptions { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull });
+            using var http = new HttpClient() { DefaultRequestHeaders = { { "auth-hash", Hash(payload) }, { "Content-Type", MediaTypeNames.Application.Json } } };
             using var request = new HttpRequestMessage(HttpMethod.Post, Endpoint + "/api/v1/payment/virtualpos/transaction/process") { Content = new StringContent(payload) };
             using var response = http.Send(request);
             using var stream = response.Content.ReadAsStream();
