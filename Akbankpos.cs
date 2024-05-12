@@ -1,3 +1,7 @@
+using System.Net.Mime;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Akbankpos {
@@ -480,6 +484,28 @@ namespace Akbankpos {
             public FormElementNameAttribute(string key) {
                 Key = key;
             }
+        }
+        public string Hash(string payload) {
+            using var hmac = new HMACSHA512(Encoding.UTF8.GetBytes(SecretKey));
+            var hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(payload));
+            return Convert.ToBase64String(hash);
+        }
+        public string Hash3D(Dictionary<string, string> form, string[] parameters) {
+            var items = new List<string>();
+            foreach (var parameter in parameters) {
+                items.Add(form[parameter]);
+            }
+            var plain = string.Join("", items);
+            return Hash(plain);
+        }
+        public Response _Transaction(Request data) {
+            var payload = JsonSerializer.Serialize(data, new JsonSerializerOptions { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull, WriteIndented = true });
+            using var http = new HttpClient() { DefaultRequestHeaders = { { "auth-hash", SecretKey }, { "Content-Type", MediaTypeNames.Application.Json } } };
+            using var request = new HttpRequestMessage(HttpMethod.Post, Endpoint + "/api/v1/payment/virtualpos/transaction/process") { Content = new StringContent(payload) };
+            using var response = http.Send(request);
+            using var stream = response.Content.ReadAsStream();
+            var result = JsonSerializer.Deserialize<Response>(stream);
+            return result;
         }
     }
 }
