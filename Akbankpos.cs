@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Net.Http.Headers;
 using System.Net.Mime;
 using System.Reflection;
 using System.Security.Cryptography;
@@ -691,9 +692,9 @@ namespace Akbankpos {
         public Response _Transaction(Request data) {
             var payload = JsonSerializer.Serialize(data, new JsonSerializerOptions { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull });
             using var http = new HttpClient();
-            http.DefaultRequestHeaders.TryAddWithoutValidation("auth-hash", Hash(payload));
             http.DefaultRequestHeaders.TryAddWithoutValidation("Content-Type", MediaTypeNames.Application.Json);
-            using var request = new HttpRequestMessage(HttpMethod.Post, Endpoint + "/api/v1/payment/virtualpos/transaction/process") { Content = new StringContent(payload) };
+            http.DefaultRequestHeaders.TryAddWithoutValidation("auth-hash", Hash(payload));
+            using var request = new HttpRequestMessage(HttpMethod.Post, Endpoint + "/api/v1/payment/virtualpos/transaction/process") { Content = new StringContent(payload, Encoding.UTF8, MediaTypeNames.Application.Json) };
             using var response = http.Send(request);
             if (response.IsSuccessStatusCode) {
                 using var stream = response.Content.ReadAsStream();
