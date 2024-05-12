@@ -485,6 +485,15 @@ namespace Akbankpos {
                 Key = key;
             }
         }
+        public string Random(int n) {
+            var chars = "0123456789ABCDEF";
+            var random = new StringBuilder();
+            for (var i = 0; i < n; i++) {
+                var index = new Random().Next(0, chars.Length - 1);
+                random.Append(chars[index]);
+            }
+            return random.ToString();
+        }
         public string Hash(string payload) {
             using var hmac = new HMACSHA512(Encoding.UTF8.GetBytes(SecretKey));
             var hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(payload));
