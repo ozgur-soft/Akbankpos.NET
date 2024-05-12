@@ -4,6 +4,7 @@ using System.Net.Mime;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -168,10 +169,10 @@ namespace Akbankpos {
             [JsonPropertyName("cardNumber")]
             [FormElementName("creditCard")]
             public string CardNumber { get; set; }
-            [JsonPropertyName("cardCode")]
+            [JsonPropertyName("cvv2")]
             [FormElementName("cvv")]
             public string CardCode { get; set; }
-            [JsonPropertyName("cardExpiry")]
+            [JsonPropertyName("expireDate")]
             [FormElementName("expiredDate")]
             public string CardExpiry { get; set; }
             public void SetCardNumber(string cardnumber) {
@@ -245,6 +246,7 @@ namespace Akbankpos {
         }
         public class B2B {
             [JsonPropertyName("identityNumber")]
+            [FormElementName("b2bIdentityNumber")]
             public string IdentityNumber { get; set; }
         }
         public class SGK {
@@ -690,13 +692,9 @@ namespace Akbankpos {
             return _Transaction(data);
         }
         public Response _Transaction(Request data) {
-            var payload = JsonSerializer.Serialize(data, new JsonSerializerOptions { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull });
+            var payload = JsonSerializer.Serialize(data, new JsonSerializerOptions { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull, Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping });
             using var http = new HttpClient();
-            using var content = new StringContent(payload);
-            content.Headers.ContentType = null;
-            content.Headers.TryAddWithoutValidation("Content-Type", "application/json");
-            content.Headers.TryAddWithoutValidation("auth-hash", Hash(payload));
-            using var request = new HttpRequestMessage(HttpMethod.Post, Endpoint + "/api/v1/payment/virtualpos/transaction/process") { Content = content };
+            using var request = new HttpRequestMessage(HttpMethod.Post, Endpoint + "/api/v1/payment/virtualpos/transaction/process") { Content = new StringContent(payload, null, MediaTypeNames.Application.Json), Headers = { { "auth-hash", Hash(payload) } } };
             using var response = http.Send(request);
             if (response.IsSuccessStatusCode) {
                 using var stream = response.Content.ReadAsStream();
