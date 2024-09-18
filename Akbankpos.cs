@@ -528,18 +528,18 @@ namespace Akbankpos {
             }
             return random.ToString();
         }
-        public string Hash(string payload) {
-            using var hmac = new HMACSHA512(Encoding.UTF8.GetBytes(SecretKey));
+        public static string Hash(string payload, string secret) {
+            using var hmac = new HMACSHA512(Encoding.UTF8.GetBytes(secret));
             var hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(payload));
             return Convert.ToBase64String(hash);
         }
-        public string Hash3d(Dictionary<string, string> form, string[] parameters) {
+        public static string Hash3d(Dictionary<string, string> form, string[] parameters, string secret) {
             var items = new List<string>();
             foreach (var parameter in parameters) {
                 items.Add(form[parameter]);
             }
             var plain = string.Join("", items);
-            return Hash(plain);
+            return Hash(plain, secret);
         }
         public Dictionary<string, string> Form3d(Request data) {
             var form = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
@@ -651,7 +651,7 @@ namespace Akbankpos {
             data.Order ??= new() { OrderId = Guid.NewGuid().ToString() };
             var parameters = new string[] { "paymentModel", "txnCode", "merchantSafeId", "terminalSafeId", "orderId", "lang", "amount", "ccbRewardAmount", "pcbRewardAmount", "xcbRewardAmount", "currencyCode", "installCount", "okUrl", "failUrl", "emailAddress", "subMerchantId", "creditCard", "expiredDate", "cvv", "randomNumber", "requestDateTime", "b2bIdentityNumber" };
             var form = Form3d(data);
-            data.Hash = Hash3d(form, parameters);
+            data.Hash = Hash3d(form, parameters, SecretKey);
             return _Transaction(data);
         }
         public Response Auth3d(Request data) {
@@ -664,7 +664,7 @@ namespace Akbankpos {
             data.Order ??= new() { OrderId = Guid.NewGuid().ToString() };
             var parameters = new string[] { "paymentModel", "txnCode", "merchantSafeId", "terminalSafeId", "orderId", "lang", "amount", "ccbRewardAmount", "pcbRewardAmount", "xcbRewardAmount", "currencyCode", "installCount", "okUrl", "failUrl", "emailAddress", "subMerchantId", "creditCard", "expiredDate", "cvv", "randomNumber", "requestDateTime", "b2bIdentityNumber" };
             var form = Form3d(data);
-            data.Hash = Hash3d(form, parameters);
+            data.Hash = Hash3d(form, parameters, SecretKey);
             return _Transaction(data);
         }
         public Response PostAuth(Request data) {
@@ -694,7 +694,7 @@ namespace Akbankpos {
         public Response _Transaction(Request data) {
             var payload = JsonSerializer.Serialize(data, new JsonSerializerOptions { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull, Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping });
             using var http = new HttpClient();
-            using var request = new HttpRequestMessage(HttpMethod.Post, Endpoint + "/api/v1/payment/virtualpos/transaction/process") { Content = new StringContent(payload, null, MediaTypeNames.Application.Json), Headers = { { "auth-hash", Hash(payload) } } };
+            using var request = new HttpRequestMessage(HttpMethod.Post, Endpoint + "/api/v1/payment/virtualpos/transaction/process") { Content = new StringContent(payload, null, MediaTypeNames.Application.Json), Headers = { { "auth-hash", Hash(payload, SecretKey) } } };
             using var response = http.Send(request);
             if (response.IsSuccessStatusCode) {
                 using var stream = response.Content.ReadAsStream();
