@@ -3,7 +3,7 @@ Akbank POS API with .NET
 
 # Installation
 ```bash
-dotnet add package Akbankpos --version 1.1.1
+dotnet add package Akbankpos --version 1.2.0
 ```
 
 # Satış
