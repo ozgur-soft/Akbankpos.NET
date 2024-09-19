@@ -536,7 +536,9 @@ namespace Akbankpos {
         public static string Hash3d(Dictionary<string, string> form, string[] parameters, string secret) {
             var items = new List<string>();
             foreach (var parameter in parameters) {
-                items.Add(form[parameter]);
+                if (form.TryGetValue(parameter, out string value)) {
+                    items.Add(value);
+                }
             }
             var plain = string.Join("", items);
             return Hash(plain, secret);
