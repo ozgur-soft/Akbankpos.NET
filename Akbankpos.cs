@@ -133,9 +133,9 @@ namespace Akbankpos {
             [JsonPropertyName("b2b")]
             public B2B B2B { get; set; }
             [JsonPropertyName("linkValidTerm")]
-            public decimal? LinkValidTerm { get; set; }
+            public long? LinkValidTerm { get; set; }
             [JsonPropertyName("merchantId")]
-            public decimal? MerchantId { get; set; }
+            public long? MerchantId { get; set; }
             [JsonPropertyName("linkExpireDate")]
             public string LinkExpireDate { get; set; }
             [JsonPropertyName("merchantOrderId")]
@@ -274,7 +274,7 @@ namespace Akbankpos {
         }
         public class Installment {
             [JsonPropertyName("installmentCount")]
-            public decimal? InstallmentCount { get; set; }
+            public int? InstallmentCount { get; set; }
             [JsonPropertyName("installmentType")]
             public string InstallmentType { get; set; }
             [JsonPropertyName("cardType")]
@@ -294,13 +294,13 @@ namespace Akbankpos {
             [JsonPropertyName("email")]
             public string Email { get; set; }
             [JsonPropertyName("linkValidTerm")]
-            public decimal? LinkValidTerm { get; set; }
+            public long? LinkValidTerm { get; set; }
             [JsonPropertyName("amount")]
             public decimal? Amount { get; set; }
             [JsonPropertyName("currency")]
             public int? Currency { get; set; }
             [JsonPropertyName("installmentCount")]
-            public decimal? InstallmentCount { get; set; }
+            public int? InstallmentCount { get; set; }
             [JsonPropertyName("referenceId")]
             public string ReferenceId { get; set; }
             [JsonPropertyName("errorCode")]
@@ -312,7 +312,7 @@ namespace Akbankpos {
             [JsonPropertyName("linkStatus")]
             public string LinkStatus { get; set; }
             [JsonPropertyName("installmentType")]
-            public decimal? InstallmentType { get; set; }
+            public string InstallmentType { get; set; }
         }
         public class Reward {
             [JsonPropertyName("ccbRewardAmount")]
@@ -541,6 +541,32 @@ namespace Akbankpos {
             var plain = string.Join("", items);
             return Hash(plain, secret);
         }
+        public Dictionary<string, string> PreAuth3dForm(Request data) {
+            data.Version = "1.00";
+            data.Terminal ??= new() { MerchantSafeId = MerchantId, TerminalSafeId = TerminalId };
+            data.RequestDateTime = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss.fff");
+            data.RandomNumber = Random(128);
+            data.TxnCode = "3004";
+            data.PaymentModel = "3D";
+            data.Order ??= new() { OrderId = Guid.NewGuid().ToString() };
+            var parameters = new string[] { "paymentModel", "txnCode", "merchantSafeId", "terminalSafeId", "orderId", "lang", "amount", "ccbRewardAmount", "pcbRewardAmount", "xcbRewardAmount", "currencyCode", "installCount", "okUrl", "failUrl", "emailAddress", "subMerchantId", "creditCard", "expiredDate", "cvv", "randomNumber", "requestDateTime", "b2bIdentityNumber" };
+            var form = Form3d(data);
+            data.Hash = Hash3d(form, parameters, SecretKey);
+            return form;
+        }
+        public Dictionary<string, string> Auth3dForm(Request data) {
+            data.Version = "1.00";
+            data.Terminal ??= new() { MerchantSafeId = MerchantId, TerminalSafeId = TerminalId };
+            data.RequestDateTime = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss.fff");
+            data.RandomNumber = Random(128);
+            data.TxnCode = "3000";
+            data.PaymentModel = "3D";
+            data.Order ??= new() { OrderId = Guid.NewGuid().ToString() };
+            var parameters = new string[] { "paymentModel", "txnCode", "merchantSafeId", "terminalSafeId", "orderId", "lang", "amount", "ccbRewardAmount", "pcbRewardAmount", "xcbRewardAmount", "currencyCode", "installCount", "okUrl", "failUrl", "emailAddress", "subMerchantId", "creditCard", "expiredDate", "cvv", "randomNumber", "requestDateTime", "b2bIdentityNumber" };
+            var form = Form3d(data);
+            data.Hash = Hash3d(form, parameters, SecretKey);
+            return form;
+        }
         public Dictionary<string, string> Form3d(Request data) {
             var form = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
             var elements = data.GetType().GetProperties().Where(x => x.GetCustomAttribute<FormElementNameAttribute>() != null);
@@ -646,12 +672,8 @@ namespace Akbankpos {
             data.Terminal ??= new() { MerchantSafeId = MerchantId, TerminalSafeId = TerminalId };
             data.RequestDateTime = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss.fff");
             data.RandomNumber = Random(128);
-            data.TxnCode = "3004";
-            data.PaymentModel = "3D";
-            data.Order ??= new() { OrderId = Guid.NewGuid().ToString() };
-            var parameters = new string[] { "paymentModel", "txnCode", "merchantSafeId", "terminalSafeId", "orderId", "lang", "amount", "ccbRewardAmount", "pcbRewardAmount", "xcbRewardAmount", "currencyCode", "installCount", "okUrl", "failUrl", "emailAddress", "subMerchantId", "creditCard", "expiredDate", "cvv", "randomNumber", "requestDateTime", "b2bIdentityNumber" };
-            var form = Form3d(data);
-            data.Hash = Hash3d(form, parameters, SecretKey);
+            data.TxnCode = "1004";
+            data.Transaction.MotoInd = 0;
             return _Transaction(data);
         }
         public Response Auth3d(Request data) {
@@ -659,12 +681,8 @@ namespace Akbankpos {
             data.Terminal ??= new() { MerchantSafeId = MerchantId, TerminalSafeId = TerminalId };
             data.RequestDateTime = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss.fff");
             data.RandomNumber = Random(128);
-            data.TxnCode = "3000";
-            data.PaymentModel = "3D";
-            data.Order ??= new() { OrderId = Guid.NewGuid().ToString() };
-            var parameters = new string[] { "paymentModel", "txnCode", "merchantSafeId", "terminalSafeId", "orderId", "lang", "amount", "ccbRewardAmount", "pcbRewardAmount", "xcbRewardAmount", "currencyCode", "installCount", "okUrl", "failUrl", "emailAddress", "subMerchantId", "creditCard", "expiredDate", "cvv", "randomNumber", "requestDateTime", "b2bIdentityNumber" };
-            var form = Form3d(data);
-            data.Hash = Hash3d(form, parameters, SecretKey);
+            data.TxnCode = "1000";
+            data.Transaction.MotoInd = 0;
             return _Transaction(data);
         }
         public Response PostAuth(Request data) {
