@@ -551,9 +551,10 @@ namespace Akbankpos {
             data.TxnCode = "3004";
             data.PaymentModel = "3D";
             data.Order ??= new() { OrderId = Guid.NewGuid().ToString() };
-            data.Hash = Hash3d(form, parameters, SecretKey);
             var parameters = new string[] { "paymentModel", "txnCode", "merchantSafeId", "terminalSafeId", "orderId", "lang", "amount", "ccbRewardAmount", "pcbRewardAmount", "xcbRewardAmount", "currencyCode", "installCount", "okUrl", "failUrl", "emailAddress", "subMerchantId", "creditCard", "expiredDate", "cvv", "randomNumber", "requestDateTime", "b2bIdentityNumber" };
             var form = Form3d(data);
+            data.Hash = Hash3d(form, parameters, SecretKey);
+            form.Add("hash", data.Hash);
             return form;
         }
         public Dictionary<string, string> Auth3dForm(Request data) {
@@ -564,9 +565,10 @@ namespace Akbankpos {
             data.TxnCode = "3000";
             data.PaymentModel = "3D";
             data.Order ??= new() { OrderId = Guid.NewGuid().ToString() };
-            data.Hash = Hash3d(form, parameters, SecretKey);
             var parameters = new string[] { "paymentModel", "txnCode", "merchantSafeId", "terminalSafeId", "orderId", "lang", "amount", "ccbRewardAmount", "pcbRewardAmount", "xcbRewardAmount", "currencyCode", "installCount", "okUrl", "failUrl", "emailAddress", "subMerchantId", "creditCard", "expiredDate", "cvv", "randomNumber", "requestDateTime", "b2bIdentityNumber" };
             var form = Form3d(data);
+            data.Hash = Hash3d(form, parameters, SecretKey);
+            form.Add("hash", data.Hash);
             return form;
         }
         public Dictionary<string, string> Form3d(Request data) {
