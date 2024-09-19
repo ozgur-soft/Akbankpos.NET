@@ -316,13 +316,10 @@ namespace Akbankpos {
         }
         public class Reward {
             [JsonPropertyName("ccbRewardAmount")]
-            [FormElementName("ccbRewardAmount")]
             public decimal? CcbRewardAmount { get; set; }
             [JsonPropertyName("pcbRewardAmount")]
-            [FormElementName("pcbRewardAmount")]
             public decimal? PcbRewardAmount { get; set; }
             [JsonPropertyName("xcbRewardAmount")]
-            [FormElementName("xcbRewardAmount")]
             public decimal? XcbRewardAmount { get; set; }
             [JsonPropertyName("ccbEarnedRewardAmount")]
             public decimal? CcbEarnedRewardAmount { get; set; }
@@ -345,8 +342,10 @@ namespace Akbankpos {
         }
         public class Transaction {
             [JsonPropertyName("amount")]
-            [FormElementName("amount")]
             public decimal? Amount { get; set; }
+            [JsonIgnore]
+            [FormElementName("amount")]
+            public string FormAmount { get; set; }
             [JsonPropertyName("currencyCode")]
             [FormElementName("currencyCode")]
             public int? Currency { get; set; }
@@ -364,6 +363,7 @@ namespace Akbankpos {
             [JsonPropertyName("stan")]
             public int? Stan { get; set; }
             public void SetAmount(string amount, string currency) {
+                FormAmount = amount;
                 Amount = decimal.Parse(amount, CultureInfo.InvariantCulture);
                 Currency = currency switch {
                     "TRY" => 949,
